@@ -14,8 +14,10 @@ def convert():
     df = pd.read_csv('training.csv')
     df1 = pd.read_csv('diagnosis.csv')
     df2 = pd.read_csv('dermatology.csv')
+    df3 = pd.read_csv('medical_data.csv')
 
     new_dataset = pd.DataFrame(columns=['symptoms', 'diagnosis'])
+    new_dataset = new_dataset.append(df3, ignore_index=True)
 
     for tup in df.itertuples(index=False):
         symptoms = []
@@ -45,7 +47,8 @@ def convert():
 
         if tup[len(tup) - 2] != '?':
             symptoms = [str(tup[len(tup)-2])]
-
+        else:
+            symptoms = []
         for e in range(len(tup) - 2):
             if tup[e] != 0 and tup[e] != '?':
                 symptoms.append(df2.columns[e].replace(',', '').lower())
@@ -78,14 +81,10 @@ def convert():
     plt.xlabel("true labels")
     plt.ylabel("predicted label")
     plt.show()
-    print(vectorizer.inverse_transform(X_test[:2]))
-    print(predicted_categories[:2])
     print(f1_score(Y_test, predicted_categories, average='macro'))
-    print(model.classes_)
 
     test = ['burning urethra micturition pain 41.0']
     test_ar = vectorizer.transform(test).toarray()
-    print(test_ar.shape)
     y_ar = model.predict_proba(test_ar)
     print(model.classes_[np.argmax(y_ar)])
     print(y_ar)
