@@ -57,9 +57,9 @@ def data_collect():
                                          ignore_index=True)
 
     final_dataset = pd.DataFrame(columns=['symptoms', 'diagnosis'])
+    stop_words = set(stopwords.words('english'))
+    lemmatizer = WordNetLemmatizer()
     for tup in new_dataset.itertuples():
-        stop_words = set(stopwords.words('english'))
-        lemmatizer = WordNetLemmatizer()
         symptoms = []
         for word, tag in pos_tag(word_tokenize(tup[1])):
             if word not in stop_words:
@@ -87,4 +87,4 @@ def data_transform():
 
     X_train, X_test, Y_train, Y_test = train_test_split(X, y, test_size=0.3)
 
-    return X_train, X_test, Y_train, Y_test
+    return X_train, X_test, Y_train, Y_test, diseases
