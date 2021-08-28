@@ -5,6 +5,10 @@ from sklearn.model_selection import learning_curve
 
 
 def classify_score(predicted, true):
+    """
+    Visualise confusion matrix and quantify performance through several metrics
+    """
+
     mat = confusion_matrix(true, predicted, normalize='true')
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -27,6 +31,10 @@ def classify_score(predicted, true):
 
 def plot_learning_curve(estimator, title, X, y, axes=None, ylim=None, cv=None,
                         n_jobs=None, train_sizes=np.linspace(.1, 1.0, 5)):
+    """
+    Show learning curve graph for the training process
+    """
+
     if axes is None:
         _, axes = plt.subplots(1, 3, figsize=(20, 5))
 

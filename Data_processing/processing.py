@@ -2,16 +2,39 @@ import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 import nltk
-nltk.download("wordnet")
-nltk.download("punkt")
+import pickle
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from nltk import pos_tag
-import pickle
+nltk.download("wordnet")
+nltk.download("punkt")
+
+STOP_WORDS = set(stopwords.words('english'))
+LEMMATIZER = WordNetLemmatizer()
+
+
+def normalise(sentence):
+    """
+    Perform normalisation of a sentence with stop word removal, tokenization and lemmatization
+    """
+    symptoms = []
+    for word, tag in pos_tag(word_tokenize(sentence.lower())):
+        if word not in STOP_WORDS:
+            wntag = tag[0].lower()
+            wntag = wntag if wntag in ['a', 'r', 'n', 'v'] else None
+            if not wntag:
+                symptoms.append(word)
+            else:
+                symptoms.append(LEMMATIZER.lemmatize(word, wntag))
+    return symptoms
 
 
 def data_collect():
+    """
+    Create final data set based on initial data sets
+    """
+
     df_1 = pd.read_csv('Data/training.csv')
     df_2 = pd.read_csv('Data/diagnosis.csv')
     df_3 = pd.read_csv('Data/dermatology.csv')
@@ -57,24 +80,18 @@ def data_collect():
                                          ignore_index=True)
 
     final_dataset = pd.DataFrame(columns=['symptoms', 'diagnosis'])
-    stop_words = set(stopwords.words('english'))
-    lemmatizer = WordNetLemmatizer()
     for tup in new_dataset.itertuples():
-        symptoms = []
-        for word, tag in pos_tag(word_tokenize(tup[1])):
-            if word not in stop_words:
-                wntag = tag[0].lower()
-                wntag = wntag if wntag in ['a', 'r', 'n', 'v'] else None
-                if not wntag:
-                    symptoms.append(word)
-                else:
-                    symptoms.append(lemmatizer.lemmatize(word, wntag))
+        symptoms = normalise(tup[1])
         final_dataset = final_dataset.append({'symptoms': ' '.join(symptoms), 'diagnosis': tup[2]},
-                                         ignore_index=True)
+                                             ignore_index=True)
     final_dataset.to_csv("Data/medical_diagnosis.csv", index=False)
 
 
 def data_transform():
+    """
+    Vectorize final data set to be used in model training
+    """
+
     corpus = pd.read_csv('Data/medical_diagnosis.csv')['symptoms']
 
     vectorizer = CountVectorizer()
@@ -82,8 +99,6 @@ def data_transform():
     pickle.dump(vectorizer, open('Models/Vectorizer/vectorizer.pickle', 'wb'))
     y = pd.read_csv('Data/medical_diagnosis.csv')['diagnosis']
     diseases = set(y)
-    print(sorted(diseases))
-    print(len(diseases))
 
     X_train, X_test, Y_train, Y_test = train_test_split(X, y, test_size=0.3)
 
